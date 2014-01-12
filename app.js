@@ -47,7 +47,8 @@ app.get('/results', function(req, res) {
         _.each(items, function(item) {
           var dateToShow = item.user_specific ? prettyDate(item.user_specific.available_date) : '';
           item.dateToShow = dateToShow;
-          console.log(item.character, item.label, item.dateToShow);
+          item.srs = item.user_specific.srs;
+          console.log(item.character, item.srs, item.label, item.dateToShow);
         });
         // output results
         res.render('results', {
