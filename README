@@ -1,4 +1,5 @@
-A node.js script to show an ordered of what I'm going to be reviewing on WaniKani.
+A tool to see what WaniKani reviews are coming up. Motivation: wanting to know how long I have to wait unti I can review specific items and level up!
+
 
 Usage: node app
 
