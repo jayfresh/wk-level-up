@@ -1,0 +1,13 @@
+<html>
+  <head>
+    <title>WaniKani Next Reviews - results</title>
+  </head>
+  <body>
+    <h1>Your next reviews</h1>
+    {{#results}}
+      {{#if dateToShow}}
+        <div class="{{label}}">{{character}} - {{label}} - {{dateToShow}}</div>
+      {{/if}}
+    {{/results}}
+  </body>
+</html>

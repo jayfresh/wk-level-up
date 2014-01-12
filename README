@@ -1,0 +1,6 @@
+A node.js script to show an ordered of what I'm going to be reviewing on WaniKani.
+
+Usage: node app
+
+Installation: npm install
+Depedencies: see package.json
