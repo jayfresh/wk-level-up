@@ -1,10 +1,12 @@
 var http = require('http'),
+  fs = require('fs'),
   request = require('request'),
   _ = require('underscore'),
   JSON = require('JSON'),
   express = require('express'),
   cons = require('consolidate'),
   Handlebars = require('handlebars'),
+  level_up = require('./level-up'),
   app = express();
 
 app.engine('html', cons.handlebars);
@@ -13,6 +15,13 @@ app.set('views', __dirname + '/views');
 app.use(express.bodyParser());
 app.use(express.static(__dirname+'/public'));
 app.use(app.router);
+
+app.get('/', function(req, res) {
+    // output results
+    res.render('index', {
+      title: 'WaniKani Next Reviews'
+    });
+});
 
 app.get('/results', function(req, res) {
   var api_key = req.query.api_key;
@@ -23,9 +32,11 @@ app.get('/results', function(req, res) {
   request("http://www.wanikani.com/api/user/"+api_key+"/user-information", function(error, response, body) {
     var data = JSON.parse(body),
       user_level = data.user_information.level,
+      //user_level = 8,
       count = 0,
-      limit = 3,
+      limit = 3, // limit the number of API requests to the three item types
       items = [],
+      locked = [],
       completionCallback = function() {
         var prettyDate = function(epoch) {
           return (new Date(epoch*1000)).toUTCString();
@@ -35,7 +46,12 @@ app.get('/results', function(req, res) {
         // get rid of items that are not unlocked
         // items that are not unlocked do not have a user_specific property set
         items = _.filter(items, function(item) {
-          return item.user_specific;
+          var unlocked = !!item.user_specific;
+          if(unlocked) {
+            return item.user_specific;  
+          } else {
+            locked.push(item);
+          }
         });
         // order all by available_date
         items.sort(function(a, b) {
@@ -50,9 +66,17 @@ app.get('/results', function(req, res) {
           item.srs = item.user_specific.srs;
           console.log(item.character, item.srs, item.label, item.dateToShow);
         });
+        console.log(items);
+        
+        // work out when you are going to level up next
+        var level_up_date = level_up();
+        
         // output results
         res.render('results', {
-          results: items
+          title: 'WaniKani Next Reviews - results',
+          level: user_level,
+          unlocked: items,
+          locked: locked
         });
       };
     // request radicals, kanji and vocab for that level
@@ -71,6 +95,14 @@ app.get('/results', function(req, res) {
     });  
   });
     
+});
+
+// Register partials
+var partials = "./views/partials/";
+fs.readdirSync(partials).forEach(function (file) {
+    var source = fs.readFileSync(partials + file, "utf8"),
+        partial = /(.+)\.html/.exec(file).pop();
+    Handlebars.registerPartial(partial, source);
 });
 
 var port = process.env.PORT || 5000;
