@@ -51,7 +51,7 @@ app.get('/results', function(req, res) {
           if(unlocked) {
             return item.user_specific;  
           } else {
-            locked.push(item);
+            lockedItems.push(item);
           }
         });
         // order all by available_date
@@ -70,14 +70,15 @@ app.get('/results', function(req, res) {
         console.log(unlockedItems);
         console.log(lockedItems);
         // work out when you are going to level up next
-        var level_up_date = level_up(allItems);
+        var level_up_moment = level_up(allItems);
         
         // output results
         res.render('results', {
           title: 'WaniKani Next Reviews - results',
           level: user_level,
           unlocked: unlockedItems,
-          locked: lockedItems
+          locked: lockedItems,
+          level_up: level_up_moment.fromNow()
         });
       };
     // request radicals, kanji and vocab for that level

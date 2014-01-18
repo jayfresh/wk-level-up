@@ -25,7 +25,7 @@ describe('level_up', function() {
       label: 'kanji',
       user_specific: null
     }, {
-      label: 'radical',
+      label: 'radicals',
       user_specific: {
         meaning_correct: 3,
         srs: 'apprentice'
@@ -37,7 +37,7 @@ describe('level_up', function() {
   it("should return 8 days if there is one radical that has no progress and a locked kanji", function() {
     var now = moment();
     var items = [{
-      label: 'radical',
+      label: 'radicals',
       user_specific: {
         meaning_correct: 0,
         srs: 'apprentice'
@@ -47,6 +47,18 @@ describe('level_up', function() {
       user_specific: null
     }];
     var d = level_up(items, now);
-    expect(d.diff(now, 'hours')).toEqual(8*24);    
+    expect(d.diff(now, 'hours')).toEqual(8*24);
+  });
+  it("should return 8 days if there are unlocked radicals and unlocked kanji", function() {
+    var now = moment();
+    var items = [{
+      label: 'radicals',
+      user_specific: null
+    }, {
+      label: 'kanji',
+      user_specific: null
+    }];
+    var d = level_up(items, now);
+    expect(d.diff(now, 'hours')).toEqual(8*24);      
   });
 });

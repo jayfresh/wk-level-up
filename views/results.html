@@ -1,13 +1,16 @@
 {{>header}}
-  <h1>Your next reviews for level {{level}}</h1>
+  <h1>Level up! for level {{level}}</h1>
+  <p>My best guess of the quickest you could level up: {{level_up}}</p>
+  <h2>Your unlocked items</h2>
   {{#unless results}}
-  <p>You don't have any unlocked items in this level</p>
+    <p>You don't have any unlocked items in this level</p>
+  {{else}}
+    {{#results}}
+      {{#if dateToShow}}
+        <div class="{{label}} {{srs}}">{{character}} - {{srs}} - {{label}} - {{dateToShow}}</div>
+      {{/if}}
+    {{/results}}
   {{/unless}}
-  {{#results}}
-    {{#if dateToShow}}
-      <div class="{{label}} {{srs}}">{{character}} - {{srs}} - {{label}} - {{dateToShow}}</div>
-    {{/if}}
-  {{/results}}
   {{#if locked}}
     <h2>Your locked items</h2>
     <div class="locked-list">

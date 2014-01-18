@@ -45,7 +45,7 @@ function level_up(items, now) {
   , apprenticeKanji = 0;
   now = moment(now); // either clones or creates new if undefined
   items.forEach(function(item) {
-    if(item.label==='radical') {
+    if(item.label==='radicals') {
       radicals.push(item);
       if(!item.user_specific) {
         lockedRadicals++;
@@ -61,8 +61,9 @@ function level_up(items, now) {
       }
     }
   });
+  console.log(lockedRadicals, apprenticeRadicals, lockedKanji, apprenticeKanji);
   if(lockedRadicals) {
-    // TO-DO
+    hours += sumFromStep('radical', 0);
   }
   if(apprenticeRadicals) {
     radicals.forEach(function(radical) {
