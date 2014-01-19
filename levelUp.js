@@ -66,8 +66,8 @@ function level_up(items, now) {
     hours += sumFromStep('radical', 0);
   }
   if(apprenticeRadicals) {
-    radicals.forEach(function(radical) {
-      if(radical.user_specific) {
+    radicals.forEach(function(radical, i) {
+      if(i===0) {
         var step = radical.user_specific.meaning_correct;
         hours += sumFromStep('radical', step);
         return false;
@@ -76,15 +76,14 @@ function level_up(items, now) {
   }
   if(lockedKanji) {
     hours += sumFromStep('kanji', 0);
-  }
-  if(apprenticeKanji) {
-    kanji.forEach(function(k) {
-      if(k.user_specific) {
+  } else {
+    if(apprenticeKanji) {
+      kanji.forEach(function(k, i) {
         var step = k.user_specific.meaning_correct;
         hours += sumFromStep('kanji', step);
         return false;
-      }
-    });
+      });
+    }
   }
   now.add('hours', hours);
   return now;

@@ -34,7 +34,8 @@ app.get('/results', function(req, res) {
       user_level = data.user_information.level,
       //user_level = 8,
       count = 0,
-      limit = 3, // limit the number of API requests to the three item types
+      itemsToGet = ['radicals', 'kanji'], // not vocabulary
+      limit = itemsToGet.length, // limit the number of API requests to the three item types
       allItems = [],
       unlockedItems = [],
       lockedItems = [],
@@ -82,7 +83,7 @@ app.get('/results', function(req, res) {
         });
       };
     // request radicals, kanji and vocab for that level
-    _.each(['radicals', 'kanji', 'vocabulary'], function(label) {
+    _.each(itemsToGet, function(label) {
       request("http://www.wanikani.com/api/user/"+api_key+"/"+label+"/"+user_level, function(error, response, body) {
         var data = JSON.parse(body);
         _.each(data.requested_information, function(item) {
