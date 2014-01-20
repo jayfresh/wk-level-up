@@ -2,7 +2,7 @@ var level_up = require('../levelUp'),
   moment = require('moment');
 
 describe('level_up', function() {
-  describe('unlocked kanji and radicals', function() {
+  describe('unlocked kanji and radicals (but some locked kanji still)', function() {
     it("should return 4.5 days + 2 days if there is one kanji that remains locked and there is one apprentice radical that has just become one step away from being gurued", function() {
       var now = moment();
       var items = [{
@@ -75,8 +75,65 @@ describe('level_up', function() {
       var d = level_up(items, now);
       expect(d.diff(now, 'hours')).toEqual(8*24);      
     });
+    it("should ignore kanji or radicals where any error has been made", function() {
+      expect(true).toEqual(false);
+    });
+    it("should return full kanji time plus remaining to-guru time of lowest level radical, if there are locked kanji and radicals are not step 0 any more", function() {
+      var now = moment(),
+        one_hour_from_now = moment(now).add('hours',1),
+        two_hours_from_now = moment(now).add('hours',2);
+      var items = [{
+        label: 'radicals',
+        user_specific: {
+          meaning_correct: 1,
+          srs: 'apprentice',
+          available_date: one_hour_from_now.unix()
+        }
+      }, {
+        label: 'radicals',
+        user_specific: {
+          meaning_correct: 2,
+          srs: 'apprentice',
+          available_date: two_hours_from_now.unix()
+        }        
+      }, {
+        label: 'kanji',
+        user_specific: null
+      }];
+      var d = level_up(items, now);
+      expect(Math.round(d.diff(now, 'hours', true))).toEqual(1+4.5*24+3.5*24-4); 
+    });
+    it("should return full kanji time plus remaining to-guru time of lowest level radical, if there are locked kanji and radicals are not step 0 any more, even if the radicals are not ordered by lowest level first", function() {
+      // now try the same with the radicals the other way around
+      var now = moment(),
+        one_hour_from_now = moment(now).add('hours',1),
+        two_hours_from_now = moment(now).add('hours',2);
+      var items = [{
+        label: 'radicals',
+        user_specific: {
+          meaning_correct: 2,
+          srs: 'apprentice',
+          available_date: one_hour_from_now.unix()
+        }
+      }, {
+        label: 'radicals',
+        user_specific: {
+          meaning_correct: 1,
+          srs: 'apprentice',
+          available_date: two_hours_from_now.unix()
+        }        
+      }, {
+        label: 'kanji',
+        user_specific: null
+      }];
+      d = level_up(items, now);
+      expect(Math.round(d.diff(now, 'hours', true))).toEqual(2+4.5*24+3.5*24-4); 
+    });
+    it("should return full kanji time plus remaining to-guru time of lowest level and oldest radical, if there are locked kanji and radicals are not step 0 any more", function() {
+      expect(true).toEqual(false);  
+    });
   });
-  describe('unlocked kanji only', function() {
+  describe('unlocked kanji only (radicals are guru)', function() {
     it("should return 4.5 days if there is a kanji that has no progress and no apprentice radicals", function() {
       var now = moment();
       var items = [{
@@ -95,7 +152,7 @@ describe('level_up', function() {
       expect(d.diff(now, 'hours')).toEqual(4.5*24);
     });
   });
-  describe('unlocked radicals only', function() {
+  describe('unlocked radicals only (kanji are locked)', function() {
     it("should return 8 days if there is one radical that has no progress and a locked kanji", function() {
       var now = moment();
       var items = [{

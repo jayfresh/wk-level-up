@@ -24,7 +24,8 @@
         -  add 4.5 days to that
 
 */
-var moment = require('moment');
+var moment = require('moment'),
+  _ = require('underscore');
 
 function level_up(items, now) {
   var stepsToHours = {
@@ -66,12 +67,27 @@ function level_up(items, now) {
     hours += sumFromStep('radical', 0);
   }
   if(apprenticeRadicals) {
-    radicals.forEach(function(radical, i) {
-      if(i===0) {
-        var step = radical.user_specific.meaning_correct;
-        hours += sumFromStep('radical', step);
-        return false;
+    // get the lowest level radical
+    var lowestLevel = 5,
+      lowestLevelIndex = 0,
+      lowestLevelRadical;
+    _.each(radicals, function(r, i) {
+      if(r.user_specific && r.user_specific.meaning_correct < lowestLevel) {
+        lowestLevel = r.user_specific.meaning_correct;
+        lowestLevelIndex = i;
       }
+    });
+    lowestLevelRadical = radicals[lowestLevelIndex];
+    _.each([lowestLevelRadical], function(radical, i) {
+      var step = radical.user_specific.meaning_correct,
+        available_date = radical.user_specific.available_date,
+        hours_to_available = moment.unix(available_date).diff(now, 'hours', true);
+      if(!available_date) {
+        // it's not available, so hours could be infinite - let's just avoid this problem for now
+        hours_to_available = 0;
+      }
+      hours += sumFromStep('radical', step) + hours_to_available;
+      return false;
     });
   }
   if(lockedKanji) {
@@ -80,7 +96,9 @@ function level_up(items, now) {
     if(apprenticeKanji) {
       kanji.forEach(function(k, i) {
         var step = k.user_specific.meaning_correct;
-        hours += sumFromStep('kanji', step);
+          //available_date = k.user_specific.available_date,
+          //hours_to_available = now.diff(moment(hours_to_available), 'hours');
+        hours += sumFromStep('kanji', step); // + hours_to_available;
         return false;
       });
     }
