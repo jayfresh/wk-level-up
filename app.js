@@ -39,10 +39,15 @@ app.get('/results', function(req, res) {
       allItems = [],
       unlockedItems = [],
       lockedItems = [],
+      incorrectItems = [],
       completionCallback = function() {
-        var prettyDate = function(epoch) {
-          return (new Date(epoch*1000)).toUTCString();
-        };
+        var now = new Date(),
+          prettyDate = function(epoch) {
+            return (new Date(epoch*1000)).toUTCString();
+          },
+          inThePast = function(epoch) {
+            return (new Date(epoch*1000)) < now;
+          };
         // flatten all the arrays into a single level
         allItems = _.flatten(allItems, true);
         // get rid of items that are not unlocked
@@ -50,7 +55,10 @@ app.get('/results', function(req, res) {
         unlockedItems = _.filter(allItems, function(item) {
           var unlocked = !!item.user_specific;
           if(unlocked) {
-            return item.user_specific;  
+            item.correctCount = item.user_specific.reading_correct ? Math.min(item.user_specific.meaning_correct, item.user_specific.reading_correct) : item.user_specific.meaning_correct;
+            item.leftToGuru = 5 - item.correctCount;
+            item.currentStreak = item.user_specific.reading_current_streak ? Math.min(item.user_specific.reading_current_streak, item.user_specific.meaning_current_streak) : item.user_specific.meaning_current_streak; 
+            return item.user_specific;
           } else {
             lockedItems.push(item);
           }
@@ -65,11 +73,19 @@ app.get('/results', function(req, res) {
         _.each(unlockedItems, function(item) {
           var dateToShow = item.user_specific ? prettyDate(item.user_specific.available_date) : '';
           item.dateToShow = dateToShow;
+          item.available = inThePast(item.user_specific.available_date) && 'available';
           item.srs = item.user_specific.srs;
           console.log(item.character, item.srs, item.label, item.dateToShow);
         });
+        // get the incorrect items
+        _.each(unlockedItems, function(item) {
+          if(item.user_specific.meaning_incorrect || item.user_specific.reading_incorrect) {
+            incorrectItems.push(item);  
+          }
+        });
         console.log(unlockedItems);
         console.log(lockedItems);
+        console.log(incorrectItems);
         // work out when you are going to level up next
         var level_up_moment = level_up(allItems);
         
@@ -79,7 +95,9 @@ app.get('/results', function(req, res) {
           level: user_level,
           unlocked: unlockedItems,
           locked: lockedItems,
-          level_up: level_up_moment.fromNow()
+          incorrect: incorrectItems,
+          level_up: level_up_moment.fromNow(),
+          level_up_calendar: level_up_moment.calendar()
         });
       };
     // request radicals, kanji and vocab for that level
@@ -88,6 +106,9 @@ app.get('/results', function(req, res) {
         var data = JSON.parse(body);
         _.each(data.requested_information, function(item) {
           item.label = label;
+          if(!item.character) {
+            item.character = '<img src="'+item.image+'">';
+          }
         });
         allItems.push(data.requested_information);
         count++;

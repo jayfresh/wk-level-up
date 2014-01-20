@@ -1,4 +1,5 @@
 WaniKani Level Up!
+v0.2
 
 A tool to see what WaniKani reviews are coming up. Motivation: wanting to know how long I have to wait unti I can review specific items and level up!
 
@@ -6,3 +7,21 @@ Usage: node app
 
 Installation: npm install
 Depedencies: see package.json
+
+Stories:
+* I want to know when I will level up next
+* I want to know how many more times I have to get things right
+* I want to know if I could be reviewing some things
+
+To-do:
+* make sure level-up algorithm works all the way through a level - IN PROGRESS
+* colour the radicals and kanji
+v0.2
+* show images for items that don't have characters - DONE
+* show the items that are incorrect and say that is confusing the algorithm - DONE
+* show how many more steps to go for each kanji & radical - DONE
+* show which items are available now - DONE
+v0.1
+* initial release
+* first pass at simple cases for level-up algorithm
+* listing all unlocked and locked items

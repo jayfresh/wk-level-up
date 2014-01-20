@@ -1,13 +1,20 @@
 {{>header}}
   <h1>Level up! for level {{level}}</h1>
-  <p>My best guess of the quickest you could level up: {{level_up}}</p>
+  <p>My best guess of the quickest you could level up: {{level_up}} ({{level_up_calendar}})</p>
+  {{#if incorrect}}
+  <h2>Your incorrect items</h2>
+  <p>These are the items you have got wrong - I'm sorry but I can't use these to calculate your level-up time as they confuse me&hellip;</p>
+    {{#incorrect}}
+    <div class="{{label}} {{srs}} {{available}}">{{{character}}} - {{srs}} - {{label}} - {{dateToShow}} ({{currentStreak}} current streak)</div>
+    {{/incorrect}}
+  {{/if}}
   <h2>Your unlocked items</h2>
   {{#unless unlocked}}
     <p>You don't have any unlocked items in this level</p>
   {{else}}
     {{#unlocked}}
       {{#if dateToShow}}
-        <div class="{{label}} {{srs}}">{{character}} - {{srs}} - {{label}} - {{dateToShow}}</div>
+        <div class="{{label}} {{srs}} {{available}}">{{{character}}} - {{srs}} - {{label}} - {{dateToShow}} - {{leftToGuru}} left to guru</div>
       {{/if}}
     {{/unlocked}}
   {{/unless}}
@@ -15,7 +22,7 @@
     <h2>Your locked items</h2>
     <div class="locked-list">
       {{#locked}}
-      <div class="{{label}}">{{character}} - {{label}}</div>
+      <div class="{{label}}">{{{character}}} - {{label}}</div>
       {{/locked}}
     </div>
   {{/if}}
