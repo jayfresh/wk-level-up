@@ -1,4 +1,9 @@
-img {
+#logoStamp {
+  position: absolute;
+  right: 0;
+  top: 50px;
+}
+.radicals img, .kanji img {
   -webkit-filter: invert(70%);
   height: 14px;
   width: 14px;
