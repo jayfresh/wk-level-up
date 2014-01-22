@@ -8,15 +8,15 @@
     <div class="{{label}} {{srs}} {{available}}">{{{character}}} - {{srs}} - {{label}} - {{dateToShow}} ({{currentStreak}} current streak)</div>
     {{/incorrect}}
   {{/if}}
-  <h2>Your unlocked items</h2>
-  {{#unless unlocked}}
+  <h2>Your unlocked items (minus incorrect items)</h2>
+  {{#unless correct}}
     <p>You don't have any unlocked items in this level</p>
   {{else}}
-    {{#unlocked}}
+    {{#correct}}
       {{#if dateToShow}}
         <div class="{{label}} {{srs}} {{available}}">{{{character}}} - {{srs}} - {{label}} - {{dateToShow}} - {{leftToGuru}} left to guru</div>
       {{/if}}
-    {{/unlocked}}
+    {{/correct}}
   {{/unless}}
   {{#if locked}}
     <h2>Your locked items</h2>

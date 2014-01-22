@@ -39,6 +39,7 @@ app.get('/results', function(req, res) {
       allItems = [],
       unlockedItems = [],
       lockedItems = [],
+      correctItems = [],
       incorrectItems = [],
       completionCallback = function() {
         var now = new Date(),
@@ -56,7 +57,7 @@ app.get('/results', function(req, res) {
           var unlocked = !!item.user_specific;
           if(unlocked) {
             item.correctCount = item.user_specific.reading_correct ? Math.min(item.user_specific.meaning_correct, item.user_specific.reading_correct) : item.user_specific.meaning_correct;
-            item.leftToGuru = 5 - item.correctCount;
+            item.leftToGuru = 4 - item.correctCount;
             item.currentStreak = item.user_specific.reading_current_streak ? Math.min(item.user_specific.reading_current_streak, item.user_specific.meaning_current_streak) : item.user_specific.meaning_current_streak; 
             return item.user_specific;
           } else {
@@ -81,11 +82,10 @@ app.get('/results', function(req, res) {
         _.each(unlockedItems, function(item) {
           if(item.user_specific.meaning_incorrect || item.user_specific.reading_incorrect) {
             incorrectItems.push(item);  
+          } else {
+            correctItems.push(item);
           }
         });
-        console.log(unlockedItems);
-        console.log(lockedItems);
-        console.log(incorrectItems);
         // work out when you are going to level up next
         var level_up_moment = level_up(allItems);
         
@@ -93,9 +93,9 @@ app.get('/results', function(req, res) {
         res.render('results', {
           title: 'WaniKani Next Reviews - results',
           level: user_level,
-          unlocked: unlockedItems,
           locked: lockedItems,
           incorrect: incorrectItems,
+          correct: correctItems,
           level_up: level_up_moment.fromNow(),
           level_up_calendar: level_up_moment.calendar()
         });
