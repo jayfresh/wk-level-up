@@ -33,6 +33,9 @@ function level_up(items, now) {
     kanji: [4, 8, 24, 3*24]
   }
   , sumFromStep = function(itemType, step) {
+    if(step===stepsToHours[itemType].length-1) {
+      return 0;
+    }
     return stepsToHours[itemType].slice(step).reduce(function(prev, current) {
       return prev+current;
     });
@@ -65,44 +68,49 @@ function level_up(items, now) {
   console.log(lockedRadicals, apprenticeRadicals, lockedKanji, apprenticeKanji);
   if(lockedRadicals) {
     hours += sumFromStep('radical', 0);
-  }
-  if(apprenticeRadicals) {
+  } else if(apprenticeRadicals) {
     // get the lowest level radical
-    var lowestLevel = 5,
-      lowestLevelIndex = 0,
-      lowestLevelRadical;
+    var radicalsByLevel = {},
+      lowestLevel = 3, // apprentice radicals could not be any higher than this
+      lowestLevelRadicals;
     _.each(radicals, function(r, i) {
-      if(r.user_specific && r.user_specific.meaning_correct < lowestLevel) {
-        lowestLevel = r.user_specific.meaning_correct;
-        lowestLevelIndex = i;
+      var level = r.user_specific.meaning_correct;
+      if(!radicalsByLevel[level]) {
+        radicalsByLevel[level] = [];
+      }
+      radicalsByLevel[level].push(r);
+      if(level < lowestLevel) {
+        lowestLevel = level;
       }
     });
-    lowestLevelRadical = radicals[lowestLevelIndex];
-    _.each([lowestLevelRadical], function(radical, i) {
-      var step = radical.user_specific.meaning_correct,
-        available_date = radical.user_specific.available_date,
-        hours_to_available = moment.unix(available_date).diff(now, 'hours', true);
-      if(!available_date) {
+    lowestLevelRadicals = radicalsByLevel[lowestLevel];
+    // now find the oldest of the lowest-level radicals
+    var latestAvailableDate = now.unix();
+    _.each(lowestLevelRadicals, function(radical) {
+      var available_date = radical.user_specific.available_date;
+      if(available_date) {
+        if(available_date > latestAvailableDate) {
+          latestAvailableDate = available_date;
+        }
+      } else {
         // it's not available, so hours could be infinite - let's just avoid this problem for now
-        hours_to_available = 0;
       }
-      hours += sumFromStep('radical', step) + hours_to_available;
-      return false;
     });
+    var hours_to_available = moment.unix(latestAvailableDate).diff(now, 'hours', true);
+    hours += sumFromStep('radical', lowestLevel) + hours_to_available;
   }
   if(lockedKanji) {
     hours += sumFromStep('kanji', 0);
-  } else {
-    if(apprenticeKanji) {
-      kanji.forEach(function(k, i) {
-        var step = k.user_specific.meaning_correct;
-          //available_date = k.user_specific.available_date,
-          //hours_to_available = now.diff(moment(hours_to_available), 'hours');
-        hours += sumFromStep('kanji', step); // + hours_to_available;
-        return false;
-      });
-    }
+  } else if(apprenticeKanji) {
+    kanji.forEach(function(k, i) {
+      var step = k.user_specific.meaning_correct;
+        //available_date = k.user_specific.available_date,
+        //hours_to_available = now.diff(moment(hours_to_available), 'hours');
+      hours += sumFromStep('kanji', step); // + hours_to_available;
+      return false;
+    });
   }
+  hours = hours.toFixed(1);
   now.add('hours', hours);
   return now;
 }
