@@ -59,8 +59,13 @@ app.get('/results', function(req, res) {
           if(unlocked) {
             item.correctCount = item.user_specific.reading_correct ? Math.min(item.user_specific.meaning_correct, item.user_specific.reading_correct) : item.user_specific.meaning_correct;
             item.leftToGuru = 4 - item.correctCount;
-            item.currentStreak = item.user_specific.reading_current_streak ? Math.min(item.user_specific.reading_current_streak, item.user_specific.meaning_current_streak) : item.user_specific.meaning_current_streak; 
-            return item.user_specific;
+            item.currentStreak = item.user_specific.reading_current_streak ? Math.min(item.user_specific.reading_current_streak, item.user_specific.meaning_current_streak) : item.user_specific.meaning_current_streak;
+            // don't allow guru'd items in
+            if(item.user_specific.srs!=='apprentice') {
+              return false;
+            } else {
+              return item.user_specific;  
+            }
           } else {
             lockedItems.push(item);
           }
