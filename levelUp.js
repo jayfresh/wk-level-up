@@ -46,7 +46,8 @@ function level_up(items, now) {
   , apprenticeRadicals = 0
   , kanji = []
   , lockedKanji = 0
-  , apprenticeKanji = 0;
+  , apprenticeKanji = 0
+  , lowestLevel;
   now = moment(now); // either clones or creates new if undefined
   items.forEach(function(item) {
     if(item.label==='radicals') {
@@ -66,13 +67,14 @@ function level_up(items, now) {
     }
   });
   console.log(lockedRadicals, apprenticeRadicals, lockedKanji, apprenticeKanji);
+  
   if(lockedRadicals) {
     hours += sumFromStep('radical', 0);
   } else if(apprenticeRadicals) {
     // get the lowest level radical
     var radicalsByLevel = {},
-      lowestLevel = 3, // apprentice radicals could not be any higher than this
       lowestLevelRadicals;
+    lowestLevel = 3; // apprentice radicals could not be any higher than this
     _.each(radicals, function(r, i) {
       var level = r.user_specific.meaning_correct;
       if(!radicalsByLevel[level]) {
@@ -99,17 +101,41 @@ function level_up(items, now) {
     var hours_to_available = moment.unix(latestAvailableDate).diff(now, 'hours', true);
     hours += sumFromStep('radical', lowestLevel) + hours_to_available;
   }
+  
   if(lockedKanji) {
     hours += sumFromStep('kanji', 0);
-  } else if(apprenticeKanji) {
-    kanji.forEach(function(k, i) {
-      var step = k.user_specific.meaning_correct;
-        //available_date = k.user_specific.available_date,
-        //hours_to_available = now.diff(moment(hours_to_available), 'hours');
-      hours += sumFromStep('kanji', step); // + hours_to_available;
-      return false;
+  } else if(apprenticeKanji) {  
+    // get the lowest level kanji
+    var kanjiByLevel = {},
+      lowestLevelKanji;
+    lowestLevel = 3; // apprentice kanji could not be any higher than this
+    _.each(kanji, function(r, i) {
+      var level = r.user_specific.meaning_correct;
+      if(!kanjiByLevel[level]) {
+        kanjiByLevel[level] = [];
+      }
+      kanjiByLevel[level].push(r);
+      if(level < lowestLevel) {
+        lowestLevel = level;
+      }
     });
+    lowestLevelKanji = kanjiByLevel[lowestLevel];
+    // now find the oldest of the lowest-level kanji
+    var latestAvailableDate = now.unix();
+    _.each(lowestLevelKanji, function(kanji) {
+      var available_date = kanji.user_specific.available_date;
+      if(available_date) {
+        if(available_date > latestAvailableDate) {
+          latestAvailableDate = available_date;
+        }
+      } else {
+        // it's not available, so hours could be infinite - let's just avoid this problem for now
+      }
+    });
+    var hours_to_available = moment.unix(latestAvailableDate).diff(now, 'hours', true);
+    hours += sumFromStep('kanji', lowestLevel) + hours_to_available;
   }
+  
   hours = hours.toFixed(1);
   now.add('hours', hours);
   return now;

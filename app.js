@@ -2,6 +2,7 @@ var http = require('http'),
   fs = require('fs'),
   request = require('request'),
   _ = require('underscore'),
+  moment = require('moment'),
   JSON = require('JSON'),
   express = require('express'),
   cons = require('consolidate'),
@@ -87,8 +88,9 @@ app.get('/results', function(req, res) {
           }
         });
         // work out when you are going to level up next
-        var level_up_moment = level_up(allItems);
-        
+        var now = moment(),
+          level_up_moment = level_up(allItems, now),
+          level_up_out = moment.duration(level_up_moment-now).humanize();
         // output results
         res.render('results', {
           title: 'WaniKani Next Reviews - results',
@@ -96,7 +98,7 @@ app.get('/results', function(req, res) {
           locked: lockedItems,
           incorrect: incorrectItems,
           correct: correctItems,
-          level_up: level_up_moment.fromNow(),
+          level_up: level_up_out,
           level_up_calendar: level_up_moment.calendar()
         });
       };

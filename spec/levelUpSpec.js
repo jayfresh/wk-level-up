@@ -132,9 +132,6 @@ describe('level_up', function() {
       d = level_up(items, now);
       expect(Math.round(d.diff(now, 'hours', true))).toEqual(2+4.5*24+3.5*24-4);
     });
-    xit("should return full kanji time plus remaining to-guru time of lowest level and oldest radical, if there are locked kanji and radicals are not step 0 any more", function() {
-      expect(true).toEqual(false);  
-    });
     it("should return 4.5 days plus longest time to next radical review, if there are radicals with one step left until guru and locked kanji", function() {
       var now = moment(),
         one_hour_from_now = moment(now).add('hours',1),
@@ -163,11 +160,14 @@ describe('level_up', function() {
   });
   describe('unlocked kanji only (radicals are guru)', function() {
     it("should return 4.5 days if there is a kanji that has no progress and no apprentice radicals", function() {
-      var now = moment();
+      var now = moment(),
+        hour_from_now = moment(now).add('hours', 1);
       var items = [{
         label: 'radical',
         user_specific: {
-          srs: 'guru'
+          srs: 'guru',
+          meaning_correct: 5,
+          available_date: hour_from_now.unix()
         }
       }, {
         label: 'kanji',
@@ -178,6 +178,28 @@ describe('level_up', function() {
       }];
       var d = level_up(items, now);
       expect(d.diff(now, 'hours')).toEqual(4.5*24);
+    });
+    it("should return the longest to-guru time for the apprentice kanji", function() {
+      var now = moment(),
+        hour_from_now = moment(now).add('hours', 1),
+        two_hours_from_now = moment(now).add('hours', 2),
+        items = [{
+          label: 'kanji',
+          user_specific: {
+            srs: 'apprentice',
+            meaning_correct: 2,
+            available_date: hour_from_now.unix()
+          }
+        }, {
+          label: 'kanji',
+          user_specific: {
+            srs: 'apprentice',
+            meaning_correct: 1,
+            available_date: two_hours_from_now.unix()
+          }
+        }],
+        d = level_up(items, now);
+      expect(d.diff(now, 'hours')).toEqual(2+4.5*24-4);
     });
   });
   describe('unlocked radicals only (kanji are locked)', function() {
